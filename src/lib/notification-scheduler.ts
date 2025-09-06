@@ -8,8 +8,8 @@ import { getAllSubscriptions } from './subscription-store';
 
 // VAPID 키 설정 (실제 운영에서는 환경변수로 관리)
 const vapidKeys = {
-  publicKey: 'BEl62iUYgUivxIkv69yViEuiBIa40HI8YxxaOBTjSW5iS-3UG6oZO7i7a_-8NWN2EKQa1oOTUE0ZxeqnVXU7_Ic',
-  privateKey: 'YGd8mXzrE0SzMZJGvVfF0Hp5iyGtPV3c8UqXBj7zquc'
+  publicKey: 'BLHkFowNUf1a1eRTAmYPsBXaQnJOSoUmUdwqYVl0dOVXPvhKlLhZi2OJpT3x5rFdp9LGO1br8IO7t5s27AwJDT4',
+  privateKey: 'GnpR7ApvVNdAOcXpSo2rCa83ggMGP2oi4R8O_-7Osjw'
 };
 
 webpush.setVapidDetails(

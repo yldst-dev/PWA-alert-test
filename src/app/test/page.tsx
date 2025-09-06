@@ -46,10 +46,13 @@ export default function TestPage() {
   const handleSubscribeToPush = async () => {
     try {
       setLoading(true);
+      console.log('Starting subscription process...');
+      
       const subscription = await subscribeToPush();
+      console.log('Got subscription:', subscription);
       
       if (subscription) {
-        await sendSubscriptionToServer(subscription);
+        console.log('Sending subscription to server...');
         const response = await fetch('/api/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -57,14 +60,22 @@ export default function TestPage() {
         });
         
         const data = await response.json();
+        console.log('Server response:', data);
+        
         if (data.subscriptionId) {
           setSubscriptionId(data.subscriptionId);
           setIsSubscribed(true);
           setMessage({ type: 'success', text: '푸시 알림 구독이 완료되었습니다!' });
+        } else {
+          setMessage({ type: 'error', text: data.error || '서버에서 구독 처리에 실패했습니다.' });
         }
+      } else {
+        setMessage({ type: 'error', text: '구독 객체를 생성할 수 없습니다.' });
       }
-    } catch {
-      setMessage({ type: 'error', text: '구독 중 오류가 발생했습니다.' });
+    } catch (error) {
+      console.error('Subscription error:', error);
+      const errorMessage = error instanceof Error ? error.message : '구독 중 알 수 없는 오류가 발생했습니다.';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
     }

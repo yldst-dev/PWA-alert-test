@@ -23,21 +23,40 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 }
 
 export async function subscribeToPush(): Promise<PushSubscription | null> {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return null;
+  try {
+    console.log('Starting push subscription process...');
+    
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.error('Push messaging is not supported');
+      throw new Error('Push messaging is not supported');
+    }
+
+    console.log('Waiting for service worker to be ready...');
+    const registration = await navigator.serviceWorker.ready;
+    console.log('Service worker is ready:', registration);
+    
+    // 이미 구독되어 있는지 확인
+    const existingSubscription = await registration.pushManager.getSubscription();
+    if (existingSubscription) {
+      console.log('Already subscribed:', existingSubscription);
+      return existingSubscription;
+    }
+
+    // VAPID 키 (실제 운영에서는 환경변수로 관리)
+    const publicVapidKey = 'BLHkFowNUf1a1eRTAmYPsBXaQnJOSoUmUdwqYVl0dOVXPvhKlLhZi2OJpT3x5rFdp9LGO1br8IO7t5s27AwJDT4';
+    
+    console.log('Subscribing to push notifications...');
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
+    });
+
+    console.log('Successfully subscribed:', subscription);
+    return subscription;
+  } catch (error) {
+    console.error('Failed to subscribe to push notifications:', error);
+    throw error;
   }
-
-  const registration = await navigator.serviceWorker.ready;
-  
-  // VAPID 키 (실제 운영에서는 환경변수로 관리)
-  const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa40HI8YxxaOBTjSW5iS-3UG6oZO7i7a_-8NWN2EKQa1oOTUE0ZxeqnVXU7_Ic';
-  
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
-  } as unknown as PushSubscriptionOptions);
-
-  return subscription;
 }
 
 export async function sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
