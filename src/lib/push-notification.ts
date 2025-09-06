@@ -49,7 +49,7 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
-    });
+    } as unknown as PushSubscriptionOptions);
 
     console.log('Successfully subscribed:', subscription);
     return subscription;

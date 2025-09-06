@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { 
   scheduleNotification,
   getAllScheduledNotifications,
-  cancelScheduledNotification,
-  type ScheduledNotification 
+  cancelScheduledNotification
 } from '@/lib/scheduled-notification-store';
 
 export async function POST(request: NextRequest) {

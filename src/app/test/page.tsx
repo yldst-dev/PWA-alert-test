@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   requestNotificationPermission, 
-  subscribeToPush, 
-  sendSubscriptionToServer,
+  subscribeToPush,
   testLocalNotification 
 } from '@/lib/push-notification';
 
