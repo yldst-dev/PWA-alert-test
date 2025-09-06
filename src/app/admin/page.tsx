@@ -44,6 +44,15 @@ export default function AdminPage() {
   useEffect(() => {
     fetchSubscriptions();
     fetchScheduledNotifications();
+    
+    // 30초마다 예약된 알림 처리
+    const processInterval = setInterval(() => {
+      processScheduledNotifications();
+    }, 30000); // 30초
+
+    // 컴포넌트 언마운트 시 인터벌 제거
+    return () => clearInterval(processInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchSubscriptions = async () => {
@@ -63,6 +72,35 @@ export default function AdminPage() {
       setScheduledNotifications(data.notifications || []);
     } catch {
       console.error('Failed to fetch scheduled notifications');
+    }
+  };
+
+  const processScheduledNotifications = async () => {
+    try {
+      const response = await fetch('/api/process-scheduled', {
+        method: 'POST'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.results && data.results.total > 0) {
+        console.log(`Processed ${data.results.success} scheduled notifications`);
+        // 알림 목록 새로고침
+        fetchScheduledNotifications();
+        
+        // 성공한 알림이 있으면 사용자에게 알림
+        if (data.results.success > 0) {
+          setMessage({ 
+            type: 'success', 
+            text: `${data.results.success}개의 예약된 알림이 전송되었습니다.` 
+          });
+          
+          // 3초 후 메시지 제거
+          setTimeout(() => setMessage(null), 3000);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to process scheduled notifications:', error);
     }
   };
 
@@ -387,12 +425,22 @@ export default function AdminPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
-                  <span>예약된 알림</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5" />
+                    <span>예약된 알림</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={processScheduledNotifications}
+                    disabled={loading}
+                  >
+                    수동 처리
+                  </Button>
                 </CardTitle>
                 <CardDescription>
-                  현재 예약된 알림 목록
+                  현재 예약된 알림 목록 (30초마다 자동 처리)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -458,7 +506,8 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <p>• <strong>즉시 전송:</strong> 모든 구독자에게 바로 알림을 보냅니다</p>
-                <p>• <strong>예약 전송:</strong> 지정한 시간에 자동으로 알림을 보냅니다</p>
+                <p>• <strong>예약 전송:</strong> 지정한 시간에 30초마다 자동으로 확인하여 전송합니다</p>
+                <p>• <strong>수동 처리:</strong> 예약된 알림을 즉시 처리하려면 &quot;수동 처리&quot; 버튼을 클릭하세요</p>
                 <p>• 제목은 간결하고 명확하게 작성하세요</p>
                 <p>• URL을 설정하면 알림 클릭 시 해당 페이지로 이동합니다</p>
                 <p>• iOS에서는 PWA로 설치된 상태에서만 푸시 알림이 작동합니다</p>
